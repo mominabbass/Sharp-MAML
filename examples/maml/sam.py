@@ -14,14 +14,19 @@ class SAM(torch.optim.Optimizer):
     @torch.no_grad()
     def first_step(self, zero_grad=False):
         grad_norm = self._grad_norm()
+        #print('momin12: ', grad_norm)
+
         for group in self.param_groups:
             scale = group["rho"] / (grad_norm + 1e-12)
+            #print('momin1: ', type(scale))
 
             for p in group["params"]:
                 if p.grad is None: continue
                 self.state[p]["old_p"] = p.data.clone()
+                #print('momins: ', p.data.size())
                 e_w = (torch.pow(p, 2) if group["adaptive"] else 1.0) * p.grad * scale.to(p)
-                #print('e_w: ', e_w)
+                #print('e_w: ', e_w[0:2])
+                #print('e_w: ', type(e_w))
                 p.add_(e_w)  # climb to the local maximum "w + e(w)"
 
         if zero_grad: self.zero_grad()
@@ -48,6 +53,8 @@ class SAM(torch.optim.Optimizer):
 
     def _grad_norm(self):
         shared_device = self.param_groups[0]["params"][0].device  # put everything on the same device, in case of model parallelism
+        #print('test7: ', len(self.param_groups[0]["params"]))
+
         norm = torch.norm(
                     torch.stack([
                         ((torch.abs(p) if group["adaptive"] else 1.0) * p.grad).norm(p=2).to(shared_device)

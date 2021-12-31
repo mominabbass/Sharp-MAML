@@ -98,7 +98,7 @@ def train(args):
 
     print(loss_acc_time_results)
 
-    file_name = 'results_MAML.npy'
+    file_name = 'results_MAML_orig.npy'
     file_addr = os.path.join('./save_results', file_name)
     with open(file_addr, 'wb') as f:
             np.save(f, loss_acc_time_results)   
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden-size', type=int, default=64, help='Number of channels for each convolutional layer (default: 64).')
     parser.add_argument('--output-folder', type=str, default=None, help='Path to the output folder for saving the model (optional).')
     parser.add_argument('--batch-size', type=int, default=16, help='Number of tasks in a mini-batch of tasks (default: 16).')
-    parser.add_argument('--num-batches', type=int, default=100, help='Number of batches the model is trained over (default: 100).')
+    parser.add_argument('--num-batches', type=int, default=300, help='Number of batches the model is trained over (default: 100).')
     parser.add_argument('--num-workers', type=int, default=1, help='Number of workers for data loading (default: 1).')
     parser.add_argument('--download', action='store_true', help='Download the Omniglot dataset in the data folder.')
     parser.add_argument('--use-cuda', action='store_true', help='Use CUDA if available.')

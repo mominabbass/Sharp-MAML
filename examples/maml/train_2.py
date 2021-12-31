@@ -50,13 +50,13 @@ def train(args):
     # meta_optimizer = SAM(model.parameters(), base_optimizer, rho=0.05,
     #                         adaptive=False, lr=1e-6)
     #scheduler = StepLR(meta_optimizer, 1e-6, args.num_batches)
-    rho = 0.05
-    meta_optimizer = SAM(model.parameters(), base_optimizer, rho=rho,
-                            adaptive=True, lr=1e-3)
+
+    print('rho: ', args.rho)
+    meta_optimizer = SAM(model.parameters(), base_optimizer, rho=args.rho,
+                            adaptive=False, lr=1e-3)
     #scheduler = StepLR(meta_optimizer, 0.0, args.num_batches)
 
     loss_acc_time_results = np.zeros((args.num_batches+1, 2))
-
 
     # Training loop
     with tqdm(dataloader, total=args.num_batches) as pbar:
@@ -76,6 +76,7 @@ def train(args):
             outer_loss = torch.tensor(0., device=args.device)
             outer_loss2 = torch.tensor(0., device=args.device)
             #outer_temp =  torch.tensor(0., device=args.device)
+
             accuracy = torch.tensor(0., device=args.device)
             for task_idx, (train_input, train_target, test_input,
                     test_target) in enumerate(zip(train_inputs, train_targets,
@@ -85,10 +86,11 @@ def train(args):
                 #inner_loss = smooth_crossentropy(train_logit, train_target, smoothing=0.000).mean()
 
                 model.zero_grad()
-                params = gradient_update_parameters(model, inner_loss, step_size=args.step_size,
-                                                    first_order=True)
-                                
+                params = gradient_update_parameters(model, train_input, train_target, inner_loss, step_size=args.step_size,
+                                                    first_order=True, adaptive = False, rho = args.rho, sam_lower = args.SAM_lower)
+
                 test_logit = model(test_input, params=params)
+                #print('test: ', test_logit[0])
                 outer_loss += F.cross_entropy(test_logit, test_target)
                 #outer_loss += smooth_crossentropy(test_logit, test_target, smoothing=0.00).mean()
              
@@ -112,8 +114,8 @@ def train(args):
                 #inner_loss = smooth_crossentropy(train_logit, train_target, smoothing=0.00).mean()
 
                 model.zero_grad()
-                params = gradient_update_parameters(model, inner_loss, step_size=args.step_size,
-                                                    first_order=True)            
+                params = gradient_update_parameters(model,train_input, train_target, inner_loss, step_size=args.step_size,
+                                                    first_order=True, adaptive = False, rho = args.rho, sam_lower = args.SAM_lower)
                 
                 test_logit = model(test_input, params=params)
                 outer_loss2 += F.cross_entropy(test_logit, test_target)
@@ -124,7 +126,7 @@ def train(args):
             outer_loss2.backward()
             meta_optimizer.second_step(zero_grad=True)
 
-            print('test_loss: ', outer_loss)
+            print('\ntest_loss: ', outer_loss)
 
             loss_acc_time_results[batch_idx, 0] = accuracy.item()
             loss_acc_time_results[batch_idx, 1] = outer_loss.item()
@@ -132,11 +134,10 @@ def train(args):
             pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
             if batch_idx >= args.num_batches:
                 break
-    
 
     print(loss_acc_time_results)
 
-    file_name = 'results_BiSAM_{}_adap.npy'.format(rho)
+    file_name = 'results_BiSAM_{}_inner.npy'.format(args.rho)
     file_addr = os.path.join('./save_results', file_name)
     with open(file_addr, 'wb') as f:
             np.save(f, loss_acc_time_results)   
@@ -159,13 +160,16 @@ if __name__ == '__main__':
     parser.add_argument('--num-ways', type=int, default=5, help='Number of classes per task (N in "N-way", default: 5).')
     parser.add_argument('--first-order', action='store_true', help='Use the first-order approximation of MAML.')
     parser.add_argument('--step-size', type=float, default=0.04, help='Step-size for the gradient step for adaptation (default: 0.4).')
+    parser.add_argument('--SAM_lower', type=bool, default=True,  help='Apply SAM on inner MAML update')
+    parser.add_argument('--rho', type=float, default=0.005, help='radius rho for SAM')
     parser.add_argument('--hidden-size', type=int, default=64, help='Number of channels for each convolutional layer (default: 64).')
     parser.add_argument('--output-folder', type=str, default=None, help='Path to the output folder for saving the model (optional).')
     parser.add_argument('--batch-size', type=int, default=16, help='Number of tasks in a mini-batch of tasks (default: 16).')
-    parser.add_argument('--num-batches', type=int, default=100, help='Number of batches the model is trained over (default: 100).')
+    parser.add_argument('--num-batches', type=int, default=300, help='Number of batches the model is trained over (default: 100).')
     parser.add_argument('--num-workers', type=int, default=1, help='Number of workers for data loading (default: 1).')
     parser.add_argument('--download', action='store_true', help='Download the Omniglot dataset in the data folder.')
     parser.add_argument('--use-cuda', action='store_true', help='Use CUDA if available.')
+
 
     args = parser.parse_args()
     args.device = torch.device('cuda' if args.use_cuda

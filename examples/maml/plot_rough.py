@@ -10,7 +10,7 @@ rho4 = 0.005
 rho4_1 = 0.009
 rho5 = 0.0005
 
-data_nsam_t1 = np.load('save_results/results_MAML.npy')
+data_nsam_t1 = np.load('save_results/results_MAML_orig.npy')
 data_sam_t1_rho1 = np.load('save_results/results_BiSAM_0.0.npy')
 data_sam_t1_rho2 = np.load('save_results/results_BiSAM_0.5.npy')
 data_sam_t1_rho2_inner = np.load('save_results/results_BiSAM_0.5_inner.npy')
@@ -37,8 +37,8 @@ data_sam_t1_rho4_inner_t1 = np.load('save_results/results_BiSAM_0.005_inner_t1.n
 data_sam_t1_rho4_inner_t2 = np.load('save_results/results_BiSAM_0.005_inner_t2.npy')
 data_sam_t1_rho4_inner_t3 = np.load('save_results/results_BiSAM_0.005_inner_t3.npy')
 
-
-data_sam_t1_rho4_inner = np.load('save_results/results_BiSAM_0.005_inner_t0.npy')
+data_sam_t1_rho4 = np.load('save_results/results_BiSAM_0.005.npy')
+data_sam_t1_rho4_inner = np.load('save_results/results_BiSAM_0.005_inner.npy')
 data_sam_t1_rho4_1 = np.load('save_results/results_BiSAM_0.009.npy')
 data_sam_t1_rho4_1_inner = np.load('save_results/results_BiSAM_0.009_inner.npy')
 data_sam_t1_rho5 = np.load('save_results/results_BiSAM_0.0005.npy')
@@ -111,6 +111,9 @@ test_loss_sam_t1_rho3_inner = data_sam_t1_rho3_inner[:,1]
 test_acc_sam_t1_rho3_adap  = data_sam_t1_rho3_adap[:,0]
 test_loss_sam_t1_rho3_adap = data_sam_t1_rho3_adap[:,1]
 
+test_acc_sam_t1_rho4  = data_sam_t1_rho4[:,0]
+test_loss_sam_t1_rho4 = data_sam_t1_rho4[:,1]
+
 test_acc_sam_t1_rho4_t0  = data_sam_t1_rho4_t0[:,0]
 test_loss_sam_t1_rho4_t0 = data_sam_t1_rho4_t0[:,1]
 
@@ -122,6 +125,9 @@ test_loss_sam_t1_rho4_t2 = data_sam_t1_rho4_t2[:,1]
 
 test_acc_sam_t1_rho4_t3  = data_sam_t1_rho4_t3[:,0]
 test_loss_sam_t1_rho4_t3 = data_sam_t1_rho4_t3[:,1]
+
+test_acc_sam_t1_rho4_inner  = data_sam_t1_rho4_inner[:,0]
+test_loss_sam_t1_rho4_inner = data_sam_t1_rho4_inner[:,1]
 
 test_acc_sam_t1_rho4_inner_t0  = data_sam_t1_rho4_inner_t0[:,0]
 test_loss_sam_t1_rho4_inner_t0 = data_sam_t1_rho4_inner_t0[:,1]
@@ -184,7 +190,7 @@ test_acc_sam_t1_rho3_inner_avg = (test_acc_sam_t1_rho3_inner_t0++test_acc_sam_t1
 
 
 plt.figure("test loss")
-plt.title("test loss vs epochs - Omniglot (5-way 5-shot) - avg over 4 random seeds")
+plt.title("test loss vs epochs - Omniglot (5-way 5-shot)")
 plt.grid()
 plt.xlabel('epoch')
 plt.ylabel("test loss")
@@ -196,8 +202,10 @@ plt.plot(test_loss_nsam_t1)
 # plt.plot(test_loss_sam_t1_rho3_inner)
 # plt.plot(test_loss_sam_t1_rho3_avg)
 # plt.plot(test_loss_sam_t1_rho3_inner_avg)
-plt.plot(test_loss_sam_t1_rho4_t0)
-plt.plot(test_loss_sam_t1_rho4_inner_t0)
+plt.plot(test_loss_sam_t1_rho4)
+plt.plot(test_loss_sam_t1_rho4_inner)
+# plt.plot(test_loss_sam_t1_rho4_t0)
+# plt.plot(test_loss_sam_t1_rho4_inner_t0)
 # plt.plot(test_loss_sam_t1_rho4_avg)
 # plt.plot(test_loss_sam_t1_rho4_inner_avg)
 # plt.plot(test_loss_sam_t1_rho4_1)
@@ -216,6 +224,8 @@ plt.legend(['MAML',
 			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho3),
 			'MAML+SAM+up (rho={})'.format(rho4),
 			'MAML+SAM+up+lo (rho={})'.format(rho4),
+			# 'MAML+SAM+up (rho={})'.format(rho4),
+			# 'MAML+SAM+up+lo (rho={})'.format(rho4),
 			# 'MAML+SAM+up+avg (rho={})'.format(rho4),
 			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho4),
 			# 'MAML+SAM+up (rho={})'.format(rho4_1),
@@ -229,7 +239,7 @@ plt.show()
 #plt.savefig("stepsize3.png", dpi=600)
 
 plt.figure("test accuracy")
-plt.title("test accuracy vs epochs - Omniglot (5-way 5-shot) - avg over 4 random seeds")
+plt.title("test accuracy vs epochs - Omniglot (5-way 5-shot)")
 plt.grid()
 plt.xlabel('epoch')
 plt.ylabel("test accuracy")
@@ -241,8 +251,10 @@ plt.plot(test_acc_nsam_t1)
 # plt.plot(test_acc_sam_t1_rho3_inner)
 # plt.plot(test_acc_sam_t1_rho3_avg)
 # plt.plot(test_acc_sam_t1_rho3_inner_avg)
-plt.plot(test_acc_sam_t1_rho4_t0)
-plt.plot(test_acc_sam_t1_rho4_inner_t0)
+plt.plot(test_acc_sam_t1_rho4)
+plt.plot(test_acc_sam_t1_rho4_inner)
+# plt.plot(test_acc_sam_t1_rho4_t0)
+# plt.plot(test_acc_sam_t1_rho4_inner_t0)
 # plt.plot(test_acc_sam_t1_rho4_avg)
 # plt.plot(test_acc_sam_t1_rho4_inner_avg)
 # plt.plot(test_acc_sam_t1_rho4_1)
@@ -261,6 +273,8 @@ plt.legend(['MAML',
 			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho3),
 			'MAML+SAM+up (rho={})'.format(rho4),
 			'MAML+SAM+up+lo (rho={})'.format(rho4),
+			# 'MAML+SAM+up (rho={})'.format(rho4),
+			# 'MAML+SAM+up+lo (rho={})'.format(rho4),
 			# 'MAML+SAM+up+avg (rho={})'.format(rho4),
 			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho4),
 			# 'MAML+SAM+up (rho={})'.format(rho4_1),
