@@ -8,268 +8,179 @@ rho2 = 0.5
 rho3 = 0.05
 rho4 = 0.005
 rho4_1 = 0.009
+rho4_2 = 0.001
 rho5 = 0.0005
-
-data_nsam_t1 = np.load('save_results/results_MAML.npy')
-data_sam_t1_rho1 = np.load('save_results/results_BiSAM_0.0.npy')
-data_sam_t1_rho2 = np.load('save_results/results_BiSAM_0.5.npy')
-data_sam_t1_rho2_inner = np.load('save_results/results_BiSAM_0.5_inner.npy')
-data_sam_t1_rho3 = np.load('save_results/results_BiSAM_0.05_t0.npy')
-data_sam_t1_rho3_t0 = np.load('save_results/results_BiSAM_0.05_t0.npy')
-data_sam_t1_rho3_t1 = np.load('save_results/results_BiSAM_0.05_t1.npy')
-data_sam_t1_rho3_t2 = np.load('save_results/results_BiSAM_0.05_t2.npy')
-data_sam_t1_rho3_t3 = np.load('save_results/results_BiSAM_0.05_t3.npy')
-data_sam_t1_rho3_inner_t0 = np.load('save_results/results_BiSAM_0.05_inner_t0.npy')
-data_sam_t1_rho3_inner_t1 = np.load('save_results/results_BiSAM_0.05_inner_t1.npy')
-data_sam_t1_rho3_inner_t2 = np.load('save_results/results_BiSAM_0.05_inner_t2.npy')
-data_sam_t1_rho3_inner_t3 = np.load('save_results/results_BiSAM_0.05_inner_t3.npy')
+rho6 = 0.00005
+rho7 = 0.000005
 
 
-data_sam_t1_rho3_inner = np.load('save_results/results_BiSAM_0.05_inner_t0.npy')
-data_sam_t1_rho3_adap = np.load('save_results/results_BiSAM_0.05_adap.npy')
+data_nsam_t1_1shot_t1 = np.load('save_results_omni/results_MAML_omniglot_20way_1shot_t1.npy')
+data_sam_t1_1shot_rho3_t1 = np.load('save_results_omni/results_BiSAM_0.05_omniglot_20way_1shot_lower_t1.npy')
+data_sam_t1_1shot_rho4_t1 = np.load('save_results_omni/results_BiSAM_0.005_omniglot_20way_1shot_lower_t2.npy')
+data_sam_t1_1shot_rho5_t1 = np.load('save_results_omni/results_BiSAM_0.0005_omniglot_20way_1shot_lower_t1.npy')
+data_sam_t1_1shot_rho6_t1 = np.load('save_results_omni/results_BiSAM_5e-05_omniglot_20way_1shot_lower_t1.npy')
 
-data_sam_t1_rho4_t0 = np.load('save_results/results_BiSAM_0.005_t0.npy')
-data_sam_t1_rho4_t1 = np.load('save_results/results_BiSAM_0.005_t1.npy')
-data_sam_t1_rho4_t2 = np.load('save_results/results_BiSAM_0.005_t2.npy')
-data_sam_t1_rho4_t3 = np.load('save_results/results_BiSAM_0.005_t3.npy')
-data_sam_t1_rho4_inner_t0 = np.load('save_results/results_BiSAM_0.005_inner_t0.npy')
-data_sam_t1_rho4_inner_t1 = np.load('save_results/results_BiSAM_0.005_inner_t1.npy')
-data_sam_t1_rho4_inner_t2 = np.load('save_results/results_BiSAM_0.005_inner_t2.npy')
-data_sam_t1_rho4_inner_t3 = np.load('save_results/results_BiSAM_0.005_inner_t3.npy')
+data_nsam_t1_1shot_t2 = np.load('save_results_omni/results_MAML_omniglot_20way_1shot_t4.npy')
+data_sam_t1_1shot_rho3_t2 = np.load('save_results_omni/results_BiSAM_0.05_omniglot_20way_1shot_lower_t2.npy')
+data_sam_t1_1shot_rho4_t2 = np.load('save_results_omni/results_BiSAM_0.005_omniglot_20way_1shot_lower_t2.npy')
+data_sam_t1_1shot_rho5_t2 = np.load('save_results_omni/results_BiSAM_0.0005_omniglot_20way_1shot_lower_t2.npy')
+data_sam_t1_1shot_rho6_t2 = np.load('save_results_omni/results_BiSAM_5e-05_omniglot_20way_1shot_lower_t2.npy')
 
-
-data_sam_t1_rho4_inner = np.load('save_results/results_BiSAM_0.005_inner_t0.npy')
-data_sam_t1_rho4_1 = np.load('save_results/results_BiSAM_0.009.npy')
-data_sam_t1_rho4_1_inner = np.load('save_results/results_BiSAM_0.009_inner.npy')
-data_sam_t1_rho5 = np.load('save_results/results_BiSAM_0.0005.npy')
-data_sam_t1_rho5_inner = np.load('save_results/results_BiSAM_0.0005_inner.npy')
+data_nsam_t1_1shot_t3 = np.load('save_results_omni/results_MAML_omniglot_20way_1shot_t3.npy')
+data_sam_t1_1shot_rho3_t3 = np.load('save_results_omni/results_BiSAM_0.05_omniglot_20way_1shot_lower_t3.npy')
+data_sam_t1_1shot_rho4_t3 = np.load('save_results_omni/results_BiSAM_0.005_omniglot_20way_1shot_lower_t3.npy')
+data_sam_t1_1shot_rho5_t3 = np.load('save_results_omni/results_BiSAM_0.0005_omniglot_20way_1shot_lower_t3.npy')
+data_sam_t1_1shot_rho6_t3 = np.load('save_results_omni/results_BiSAM_5e-05_omniglot_20way_1shot_lower_t3.npy')
 
 
 
-# data_nsam_t2 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_trial2.npy')
-# data_sam_t2 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_dec15_trial2.npy')
+test_acc_nsam_t1_1shot_t1  = data_nsam_t1_1shot_t1[:,0]
+test_loss_nsam_t1_1shot_t1 = data_nsam_t1_1shot_t1[:,1]
 
-# data_nsam_t3 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_trial3.npy')
-# data_sam_t3 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_dec15_trial3.npy')
+test_acc_sam_t1_1shot_rho3_t1 = data_sam_t1_1shot_rho3_t1[:,0]
+test_loss_sam_t1_1shot_rho3_t1 = data_sam_t1_1shot_rho3_t1[:,1]
 
-# data_nsam_t4 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_trial4.npy')
-# data_sam_t4 = np.load('save_results/minibatch_bs_10_vbs_10_olrmu_3e-06_0.0_ilrmu_0.3_0.0_eta_0.5_T_10_K_10dec15/results_dec15_trial4.npy')
+test_acc_sam_t1_1shot_rho4_t1  = data_sam_t1_1shot_rho4_t1[:,0]
+test_loss_sam_t1_1shot_rho4_t1 = data_sam_t1_1shot_rho4_t1[:,1]
 
-test_acc_nsam_t1  = data_nsam_t1[:,0]
-test_loss_nsam_t1 = data_nsam_t1[:,1]
+test_acc_sam_t1_1shot_rho5_t1  = data_sam_t1_1shot_rho5_t1[:,0]
+test_loss_sam_t1_1shot_rho5_t1 = data_sam_t1_1shot_rho5_t1[:,1]
 
-#time_nsam_t1 = data_nsam_t1[:,2]
-
-# test_loss_nsam_t2 = data_nsam_t2[:,0]
-# test_acc_nsam_t2  = data_nsam_t2[:,1]
-# time_nsam_t2 = data_nsam_t2[:,2]
-
-# test_loss_nsam_t3 = data_nsam_t3[:,0]
-# test_acc_nsam_t3  = data_nsam_t3[:,1]
-# time_nsam_t3 = data_nsam_t3[:,2]
-
-# test_loss_nsam_t4 = data_nsam_t4[:,0]
-# test_acc_nsam_t4  = data_nsam_t4[:,1]
-# time_nsam_t4 = data_nsam_t4[:,2]
-
-
-# test_loss_nsam = (test_loss_nsam_t1+test_loss_nsam_t2+test_loss_nsam_t3+test_loss_nsam_t4)/4
-# test_acc_nsam = (test_acc_nsam_t1+test_acc_nsam_t2+test_acc_nsam_t3+test_acc_nsam_t4)/4
-
-
-test_acc_sam_t1_rho1  = data_sam_t1_rho1[:,0]
-test_loss_sam_t1_rho1 = data_sam_t1_rho1[:,1]
-
-
-test_acc_sam_t1_rho2  = data_sam_t1_rho2[:,0]
-test_loss_sam_t1_rho2 = data_sam_t1_rho2[:,1]
-test_acc_sam_t1_rho2_inner  = data_sam_t1_rho2_inner[:,0]
-test_loss_sam_t1_rho2_inner = data_sam_t1_rho2_inner[:,1]
-
-test_acc_sam_t1_rho3  = data_sam_t1_rho3[:,0]
-test_loss_sam_t1_rho3 = data_sam_t1_rho3[:,1]
-test_acc_sam_t1_rho3_t0  = data_sam_t1_rho3_t0[:,0]
-test_loss_sam_t1_rho3_t0 = data_sam_t1_rho3_t0[:,1]
-test_acc_sam_t1_rho3_t1  = data_sam_t1_rho3_t1[:,0]
-test_loss_sam_t1_rho3_t1 = data_sam_t1_rho3_t1[:,1]
-test_acc_sam_t1_rho3_t2  = data_sam_t1_rho3_t2[:,0]
-test_loss_sam_t1_rho3_t2 = data_sam_t1_rho3_t2[:,1]
-test_acc_sam_t1_rho3_t3  = data_sam_t1_rho3_t3[:,0]
-test_loss_sam_t1_rho3_t3 = data_sam_t1_rho3_t3[:,1]
-
-test_acc_sam_t1_rho3_inner_t0  = data_sam_t1_rho3_inner_t0[:,0]
-test_loss_sam_t1_rho3_inner_t0 = data_sam_t1_rho3_inner_t0[:,1]
-test_acc_sam_t1_rho3_inner_t1  = data_sam_t1_rho3_inner_t1[:,0]
-test_loss_sam_t1_rho3_inner_t1 = data_sam_t1_rho3_inner_t1[:,1]
-test_acc_sam_t1_rho3_inner_t2  = data_sam_t1_rho3_inner_t2[:,0]
-test_loss_sam_t1_rho3_inner_t2 = data_sam_t1_rho3_inner_t2[:,1]
-test_acc_sam_t1_rho3_inner_t3  = data_sam_t1_rho3_inner_t3[:,0]
-test_loss_sam_t1_rho3_inner_t3 = data_sam_t1_rho3_inner_t3[:,1]
-
-test_acc_sam_t1_rho3_inner  = data_sam_t1_rho3_inner[:,0]
-test_loss_sam_t1_rho3_inner = data_sam_t1_rho3_inner[:,1]
-test_acc_sam_t1_rho3_adap  = data_sam_t1_rho3_adap[:,0]
-test_loss_sam_t1_rho3_adap = data_sam_t1_rho3_adap[:,1]
-
-test_acc_sam_t1_rho4_t0  = data_sam_t1_rho4_t0[:,0]
-test_loss_sam_t1_rho4_t0 = data_sam_t1_rho4_t0[:,1]
-
-test_acc_sam_t1_rho4_t1  = data_sam_t1_rho4_t1[:,0]
-test_loss_sam_t1_rho4_t1 = data_sam_t1_rho4_t1[:,1]
-
-test_acc_sam_t1_rho4_t2  = data_sam_t1_rho4_t2[:,0]
-test_loss_sam_t1_rho4_t2 = data_sam_t1_rho4_t2[:,1]
-
-test_acc_sam_t1_rho4_t3  = data_sam_t1_rho4_t3[:,0]
-test_loss_sam_t1_rho4_t3 = data_sam_t1_rho4_t3[:,1]
-
-test_acc_sam_t1_rho4_inner_t0  = data_sam_t1_rho4_inner_t0[:,0]
-test_loss_sam_t1_rho4_inner_t0 = data_sam_t1_rho4_inner_t0[:,1]
-
-test_acc_sam_t1_rho4_inner_t1  = data_sam_t1_rho4_inner_t1[:,0]
-test_loss_sam_t1_rho4_inner_t1 = data_sam_t1_rho4_inner_t1[:,1]
-
-test_acc_sam_t1_rho4_inner_t2  = data_sam_t1_rho4_inner_t2[:,0]
-test_loss_sam_t1_rho4_inner_t2 = data_sam_t1_rho4_inner_t2[:,1]
-
-test_acc_sam_t1_rho4_inner_t3  = data_sam_t1_rho4_inner_t3[:,0]
-test_loss_sam_t1_rho4_inner_t3 = data_sam_t1_rho4_inner_t3[:,1]
+test_acc_sam_t1_1shot_rho6_t1  = data_sam_t1_1shot_rho6_t1[:,0]
+test_loss_sam_t1_1shot_rho6_t1 = data_sam_t1_1shot_rho6_t1[:,1]
 
 
 
 
-test_acc_sam_t1_rho4_inner  = data_sam_t1_rho4_inner[:,0]
-test_loss_sam_t1_rho4_inner = data_sam_t1_rho4_inner[:,1]
+test_acc_nsam_t1_1shot_t2  = data_nsam_t1_1shot_t2[:,0]
+test_loss_nsam_t1_1shot_t2 = data_nsam_t1_1shot_t2[:,1]
 
-test_acc_sam_t1_rho4_1  = data_sam_t1_rho4_1[:,0]
-test_loss_sam_t1_rho4_1 = data_sam_t1_rho4_1[:,1]
+test_acc_sam_t1_1shot_rho3_t2 = data_sam_t1_1shot_rho3_t2[:,0]
+test_loss_sam_t1_1shot_rho3_t2 = data_sam_t1_1shot_rho3_t2[:,1]
 
+test_acc_sam_t1_1shot_rho4_t2  = data_sam_t1_1shot_rho4_t2[:,0]
+test_loss_sam_t1_1shot_rho4_t2 = data_sam_t1_1shot_rho4_t2[:,1]
 
-test_acc_sam_t1_rho4_1_inner  = data_sam_t1_rho4_1_inner[:,0]
-test_loss_sam_t1_rho4_1_inner = data_sam_t1_rho4_1_inner[:,1]
+test_acc_sam_t1_1shot_rho5_t2  = data_sam_t1_1shot_rho5_t2[:,0]
+test_loss_sam_t1_1shot_rho5_t2 = data_sam_t1_1shot_rho5_t2[:,1]
 
-test_acc_sam_t1_rho5  = data_sam_t1_rho5[:,0]
-test_loss_sam_t1_rho5 = data_sam_t1_rho5[:,1]
-
-test_acc_sam_t1_rho5_inner  = data_sam_t1_rho5_inner[:,0]
-test_loss_sam_t1_rho5_inner = data_sam_t1_rho5_inner[:,1]
-
-#time_sam_t1 = data_sam_t1[:,2]
-
-# test_loss_sam_t2 = data_sam_t2[:,0]
-# test_acc_sam_t2  = data_sam_t2[:,1]
-# time_sam_t2 = data_sam_t2[:,2]
-
-# test_loss_sam_t3 = data_sam_t3[:,0]
-# test_acc_sam_t3  = data_sam_t3[:,1]
-# time_sam_t3 = data_sam_t3[:,2]
-
-# test_loss_sam_t4 = data_sam_t4[:,0]
-# test_acc_sam_t4  = data_sam_t4[:,1]
-# time_sam_t4 = data_sam_t4[:,2]
+test_acc_sam_t1_1shot_rho6_t2  = data_sam_t1_1shot_rho6_t2[:,0]
+test_loss_sam_t1_1shot_rho6_t2 = data_sam_t1_1shot_rho6_t2[:,1]
 
 
-# test_loss_sam = (test_loss_sam_t1+test_loss_sam_t2+test_loss_sam_t3+test_loss_sam_t4)/4
-# test_acc_sam = (test_acc_sam_t1+test_acc_sam_t2+test_acc_sam_t3+test_acc_sam_t4)/4
 
-test_loss_sam_t1_rho4_avg = (test_loss_sam_t1_rho4_t0+test_loss_sam_t1_rho4_t1+test_loss_sam_t1_rho4_t2+test_loss_sam_t1_rho4_t3)/4
-test_acc_sam_t1_rho4_avg = (test_acc_sam_t1_rho4_t0+test_acc_sam_t1_rho4_t1+test_acc_sam_t1_rho4_t2+test_acc_sam_t1_rho4_t3)/4
-test_loss_sam_t1_rho4_inner_avg = (test_loss_sam_t1_rho4_inner_t0+test_loss_sam_t1_rho4_inner_t1+test_loss_sam_t1_rho4_inner_t2+test_loss_sam_t1_rho4_inner_t3)/4
-test_acc_sam_t1_rho4_inner_avg = (test_acc_sam_t1_rho4_inner_t0+test_acc_sam_t1_rho4_inner_t1+test_acc_sam_t1_rho4_inner_t2+test_acc_sam_t1_rho4_inner_t3)/4
 
-test_loss_sam_t1_rho3_avg = (test_loss_sam_t1_rho3_t0++test_loss_sam_t1_rho3_t2+test_loss_sam_t1_rho3_t3)/4
-test_acc_sam_t1_rho3_avg = (test_acc_sam_t1_rho3_t0++test_acc_sam_t1_rho3_t2+test_acc_sam_t1_rho3_t3)/4
-test_loss_sam_t1_rho3_inner_avg = (test_loss_sam_t1_rho3_inner_t0++test_loss_sam_t1_rho3_inner_t2+test_loss_sam_t1_rho3_inner_t3)/4
-test_acc_sam_t1_rho3_inner_avg = (test_acc_sam_t1_rho3_inner_t0++test_acc_sam_t1_rho3_inner_t2+test_acc_sam_t1_rho3_inner_t3)/4
+test_acc_nsam_t1_1shot_t3  = data_nsam_t1_1shot_t3[:,0]
+test_loss_nsam_t1_1shot_t3 = data_nsam_t1_1shot_t3[:,1]
+
+test_acc_sam_t1_1shot_rho3_t3 = data_sam_t1_1shot_rho3_t3[:,0]
+test_loss_sam_t1_1shot_rho3_t3 = data_sam_t1_1shot_rho3_t3[:,1]
+
+test_acc_sam_t1_1shot_rho4_t3  = data_sam_t1_1shot_rho4_t3[:,0]
+test_loss_sam_t1_1shot_rho4_t3 = data_sam_t1_1shot_rho4_t3[:,1]
+
+test_acc_sam_t1_1shot_rho5_t3  = data_sam_t1_1shot_rho5_t3[:,0]
+test_loss_sam_t1_1shot_rho5_t3 = data_sam_t1_1shot_rho5_t3[:,1]
+
+test_acc_sam_t1_1shot_rho6_t3  = data_sam_t1_1shot_rho6_t3[:,0]
+test_loss_sam_t1_1shot_rho6_t3 = data_sam_t1_1shot_rho6_t3[:,1]
+
+
+
+test_acc_nsam_t1_1shot_avg = (test_acc_nsam_t1_1shot_t1+test_acc_nsam_t1_1shot_t2+test_acc_nsam_t1_1shot_t3)/3
+test_loss_nsam_t1_1shot_avg = (test_loss_nsam_t1_1shot_t1+test_loss_nsam_t1_1shot_t2+test_loss_nsam_t1_1shot_t3)/3
+
+test_acc_sam_t1_1shot_rho3_avg = (test_acc_sam_t1_1shot_rho3_t1+test_acc_sam_t1_1shot_rho3_t2+test_acc_sam_t1_1shot_rho3_t3)/3
+test_loss_sam_t1_1shot_rho3_avg = (test_loss_sam_t1_1shot_rho3_t1+test_loss_sam_t1_1shot_rho3_t2+test_loss_sam_t1_1shot_rho3_t3)/3
+
+test_acc_sam_t1_1shot_rho4_avg = (test_acc_sam_t1_1shot_rho4_t1+test_acc_sam_t1_1shot_rho4_t2+test_acc_sam_t1_1shot_rho4_t3)/3
+test_loss_sam_t1_1shot_rho4_avg = (test_loss_sam_t1_1shot_rho4_t1+test_loss_sam_t1_1shot_rho4_t2+test_loss_sam_t1_1shot_rho4_t3)/3
+
+test_acc_sam_t1_1shot_rho5_avg = (test_acc_sam_t1_1shot_rho5_t1+test_acc_sam_t1_1shot_rho5_t2+test_acc_sam_t1_1shot_rho5_t3)/3
+test_loss_sam_t1_1shot_rho5_avg = (test_loss_sam_t1_1shot_rho5_t1+test_loss_sam_t1_1shot_rho5_t2+test_loss_sam_t1_1shot_rho5_t3)/3
+
+test_acc_sam_t1_1shot_rho6_avg = (test_acc_sam_t1_1shot_rho6_t1+test_acc_sam_t1_1shot_rho6_t2+test_acc_sam_t1_1shot_rho6_t3)/3
+test_loss_sam_t1_1shot_rho6_avg = (test_loss_sam_t1_1shot_rho6_t1+test_loss_sam_t1_1shot_rho6_t2+test_loss_sam_t1_1shot_rho6_t3)/3
+
+
+
+print('max accuracy (trial 1) MAML                       (5-way 1-shot) (in first 1000 epochs):  {} (in {} epochs)'.format(np.max(test_acc_nsam_t1_1shot_t1[0:500]), np.argmax(test_acc_nsam_t1_1shot_t1[0:500])))
+print('max accuracy (trial 1) MAML+SAM_lower rho=0.05    (5-way 1-shot) (in first 1000 epochs):  {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho3_t1[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho3_t1[0:1000])))
+print('max accuracy (trial 1) MAML+SAM_lower rho=0.005   (5-way 1-shot) (in first 1000 epochs):  {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho4_t1[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho4_t1[0:1000])))
+print('max accuracy (trial 1) MAML+SAM_lower rho=0.0005  (5-way 1-shot) (in first 1000 epochs):  {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho5_t1[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho5_t1[0:1000])))
+print('max accuracy (trial 1) MAML+SAM_lower rho=0.00005 (5-way 1-shot) (in first 1000 epochs):  {} (in {} epochs)\n'.format(np.max(test_acc_sam_t1_1shot_rho6_t1[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho6_t1[0:1000])))
+
+print('max accuracy (trial 2) MAML                       (5-way 1-shot) (in first 1000 epochs): \t {} (in {} epochs)'.format(np.max(test_acc_nsam_t1_1shot_t2[0:1000]), np.argmax(test_acc_nsam_t1_1shot_t2[0:1000])))
+print('max accuracy (trial 2) MAML+SAM_lower rho=0.05    (5-way 1-shot) (in first 1000 epochs): \t {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho3_t2[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho3_t2[0:1000])))
+print('max accuracy (trial 2) MAML+SAM_lower rho=0.005   (5-way 1-shot) (in first 1000 epochs): \t {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho4_t2[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho4_t2[0:1000])))
+print('max accuracy (trial 2) MAML+SAM_lower rho=0.0005  (5-way 1-shot) (in first 1000 epochs): \t {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho5_t2[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho5_t2[0:1000])))
+print('max accuracy (trial 2) MAML+SAM_lower rho=0.00005 (5-way 1-shot) (in first 1000 epochs): \t {} (in {} epochs)\n'.format(np.max(test_acc_sam_t1_1shot_rho6_t2[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho6_t2[0:1000])))
+
+print('max accuracy (trial 3) MAML                       (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_nsam_t1_1shot_t3[0:1000]), np.argmax(test_acc_nsam_t1_1shot_t3[0:1000])))
+print('max accuracy (trial 3) MAML+SAM_lower rho=0.05    (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho3_t3[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho3_t3[0:1000])))
+print('max accuracy (trial 3) MAML+SAM_lower rho=0.005   (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho4_t3[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho4_t3[0:1000])))
+print('max accuracy (trial 3) MAML+SAM_lower rho=0.0005  (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho5_t3[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho5_t3[0:1000])))
+print('max accuracy (trial 3) MAML+SAM_lower rho=0.00005 (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)\n'.format(np.max(test_acc_sam_t1_1shot_rho6_t3[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho6_t3[0:1000])))
+
+print('max avg accuracy (3 trials) MAML                       (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_nsam_t1_1shot_avg[0:1000]), np.argmax(test_acc_nsam_t1_1shot_avg[0:1000])))
+print('max avg accuracy (3 trials) MAML+SAM_lower rho=0.05    (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho3_avg[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho3_avg[0:1000])))
+print('max avg accuracy (3 trials) MAML+SAM_lower rho=0.005   (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho4_avg[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho4_avg[0:1000])))
+print('max avg accuracy (3 trials) MAML+SAM_lower rho=0.0005  (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)'.format(np.max(test_acc_sam_t1_1shot_rho5_avg[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho5_avg[0:1000])))
+print('max avg accuracy (3 trials) MAML+SAM_lower rho=0.00005 (5-way 1-shot) (in first 1000 epochs): {} (in {} epochs)\n'.format(np.max(test_acc_sam_t1_1shot_rho6_avg[0:1000]), np.argmax(test_acc_sam_t1_1shot_rho6_avg[0:1000])))
 
 
 plt.figure("test loss")
-plt.title("test loss vs epochs - Omniglot (5-way 5-shot) - avg over 4 random seeds")
+plt.title("test loss vs epochs - omniglot (20-way 1-shot)")
 plt.grid()
 plt.xlabel('epoch')
 plt.ylabel("test loss")
-plt.plot(test_loss_nsam_t1)
-#plt.plot(test_loss_sam_t1_rho1)
-# plt.plot(test_loss_sam_t1_rho2)
-# plt.plot(test_loss_sam_t1_rho2_inner)
-# plt.plot(test_loss_sam_t1_rho3)
-# plt.plot(test_loss_sam_t1_rho3_inner)
-# plt.plot(test_loss_sam_t1_rho3_avg)
-# plt.plot(test_loss_sam_t1_rho3_inner_avg)
-plt.plot(test_loss_sam_t1_rho4_t0)
-plt.plot(test_loss_sam_t1_rho4_inner_t0)
-# plt.plot(test_loss_sam_t1_rho4_avg)
-# plt.plot(test_loss_sam_t1_rho4_inner_avg)
-# plt.plot(test_loss_sam_t1_rho4_1)
-# plt.plot(test_loss_sam_t1_rho4_1_inner)
-# plt.plot(test_loss_sam_t1_rho5)
-# plt.plot(test_loss_sam_t1_rho5_inner)
-#plt.plot(test_loss_sam_t1_rho3_adap)
-#plt.yscale("log")
+plt.plot(test_loss_nsam_t1_1shot_avg)
+#plt.plot(test_loss_sam_t1_1shot_rho1)
+plt.plot(test_loss_sam_t1_1shot_rho3_avg)
+plt.plot(test_loss_sam_t1_1shot_rho4_avg)
+plt.plot(test_loss_sam_t1_1shot_rho5_avg)
+plt.plot(test_loss_sam_t1_1shot_rho6_avg)
+#plt.plot(test_loss_sam_t1_1shot_rho7)
+#plt.plot(test_loss_nsam_t1_5shot)
 plt.legend(['MAML',
+			#'MAML 5-way 5-shot',
 			#'MAML+SAM (rho={})'.format(rho1),
-			# 'MAML+SAM+up (rho={})'.format(rho2),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho2),
-			# 'MAML+SAM+up (rho={})'.format(rho3),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho3),
-			# 'MAML+SAM+up+avg (rho={})'.format(rho3),
-			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho3),
-			'MAML+SAM+up (rho={})'.format(rho4),
-			'MAML+SAM+up+lo (rho={})'.format(rho4),
-			# 'MAML+SAM+up+avg (rho={})'.format(rho4),
-			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho4),
-			# 'MAML+SAM+up (rho={})'.format(rho4_1),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho4_1),
-			# 'MAML+SAM+up (rho={})'.format(rho5),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho5),
-			#'MAML+SAM (rho={}, adap)'.format(rho3),
+			'MAML+SAM (lower) (rho={})'.format(rho3),
+			'MAML+SAM (lower) (rho={})'.format(rho4),
+			'MAML+SAM (lower) (rho={})'.format(rho5),
+			'MAML+SAM (lower) (rho={})'.format(rho6),
+			#'MAML+SAM (rho={})'.format(rho7),
 			])
-plt.savefig("./save_results/test_loss.png", dpi=600)
+plt.savefig("./save_results_omni/test_loss_omniglot_avg.png", dpi=600)
 plt.show()
 #plt.savefig("stepsize3.png", dpi=600)
 
+
 plt.figure("test accuracy")
-plt.title("test accuracy vs epochs - Omniglot (5-way 5-shot) - avg over 4 random seeds")
+plt.title("test accuracy vs epochs - omniglot (20-way 1-shot)")
 plt.grid()
 plt.xlabel('epoch')
 plt.ylabel("test accuracy")
-plt.plot(test_acc_nsam_t1)
-#plt.plot(test_acc_sam_t1_rho1)
-# plt.plot(test_acc_sam_t1_rho2)
-# plt.plot(test_acc_sam_t1_rho2_inner)
-# plt.plot(test_acc_sam_t1_rho3)
-# plt.plot(test_acc_sam_t1_rho3_inner)
-# plt.plot(test_acc_sam_t1_rho3_avg)
-# plt.plot(test_acc_sam_t1_rho3_inner_avg)
-plt.plot(test_acc_sam_t1_rho4_t0)
-plt.plot(test_acc_sam_t1_rho4_inner_t0)
-# plt.plot(test_acc_sam_t1_rho4_avg)
-# plt.plot(test_acc_sam_t1_rho4_inner_avg)
-# plt.plot(test_acc_sam_t1_rho4_1)
-# plt.plot(test_acc_sam_t1_rho4_1_inner)
-# plt.plot(test_acc_sam_t1_rho5)
-# plt.plot(test_acc_sam_t1_rho5_inner)
-#plt.plot(test_acc_sam_t1_rho3_adap)
+plt.plot(test_acc_nsam_t1_1shot_avg)
+#plt.plot(test_acc_sam_t1_1shot_rho1)
+plt.plot(test_acc_sam_t1_1shot_rho3_avg)
+plt.plot(test_acc_sam_t1_1shot_rho4_avg)
+plt.plot(test_acc_sam_t1_1shot_rho5_avg)
+plt.plot(test_acc_sam_t1_1shot_rho6_avg)
+#plt.plot(test_acc_sam_t1_1shot_rho7)
+# plt.plot(test_acc_nsam_t1_5shot)
+#plt.plot(test_acc_sam_t1_rho1[0:100])
 #plt.yscale("log")
 plt.legend(['MAML',
+			#'MAML 5-way 5-shot',
 			#'MAML+SAM (rho={})'.format(rho1),
-			# 'MAML+SAM+up (rho={})'.format(rho2),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho2),
-			# 'MAML+SAM+up (rho={})'.format(rho3),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho3),
-			# 'MAML+SAM+up+avg (rho={})'.format(rho3),
-			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho3),
-			'MAML+SAM+up (rho={})'.format(rho4),
-			'MAML+SAM+up+lo (rho={})'.format(rho4),
-			# 'MAML+SAM+up+avg (rho={})'.format(rho4),
-			# 'MAML+SAM+up+lo+avg (rho={})'.format(rho4),
-			# 'MAML+SAM+up (rho={})'.format(rho4_1),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho4_1),
-			# 'MAML+SAM+up (rho={})'.format(rho5),
-			# 'MAML+SAM+up+lo (rho={})'.format(rho5),
-			#'MAML+SAM (rho={}, adap)'.format(rho3),
+			'MAML+SAM (lower) (rho={})'.format(rho3),
+			'MAML+SAM (lower) (rho={})'.format(rho4),
+			'MAML+SAM (lower) (rho={})'.format(rho5),
+			'MAML+SAM (lower) (rho={})'.format(rho6),
+			#'MAML+SAM (rho={})'.format(rho7),
 			])
-plt.savefig("./save_results/test_acc.png", dpi=600)
+plt.savefig("./save_results_omni/test_acc_omniglot_avg.png", dpi=600)
 plt.show()
 
 

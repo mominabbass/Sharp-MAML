@@ -5,8 +5,10 @@ from tqdm import tqdm
 import logging
 import numpy as np
 from torchmeta.datasets.helpers import omniglot
+#from torchmeta.datasets.helpers import miniimagenet
 from torchmeta.utils.data import BatchMetaDataLoader
 from torchmeta.utils.gradient_based import gradient_update_parameters
+import time
 
 from model import ConvolutionalNeuralNetwork
 from utils import get_accuracy
@@ -28,6 +30,7 @@ def train(args):
                        ways=args.num_ways,
                        shuffle=True,
                        test_shots=15,
+                       seed=0,
                        meta_train=True,
                        download=args.download)
     dataloader = BatchMetaDataLoader(dataset,
@@ -37,7 +40,8 @@ def train(args):
 
     model = ConvolutionalNeuralNetwork(1,
                                        args.num_ways,
-                                       hidden_size=args.hidden_size)
+                                       hidden_size=args.hidden_size, 
+                                       final_layer_size=64)
     model.to(device=args.device)
     model.train()
     meta_optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -46,11 +50,13 @@ def train(args):
 
 
     # Training loop
+    start_time = time.time()
     with tqdm(dataloader, total=args.num_batches) as pbar:
         for batch_idx, batch in enumerate(pbar):
             model.zero_grad()
 
             train_inputs, train_targets = batch['train']
+           
             train_inputs = train_inputs.to(device=args.device)
             train_targets = train_targets.to(device=args.device)
 
@@ -96,10 +102,11 @@ def train(args):
             if batch_idx >= args.num_batches:
                 break
 
+    print('Training finished, took {:.2f}s'.format(time.time() - start_time))
     print(loss_acc_time_results)
 
-    file_name = 'results_MAML_orig.npy'
-    file_addr = os.path.join('./save_results', file_name)
+    file_name = 'results_MAML_omniglot_20way_1shot_t6.npy'
+    file_addr = os.path.join('./save_results_omni', file_name)
     with open(file_addr, 'wb') as f:
             np.save(f, loss_acc_time_results)   
 
@@ -119,18 +126,17 @@ if __name__ == '__main__':
     parser.add_argument('--num-shots', type=int, default=5, help='Number of examples per class (k in "k-shot", default: 5).')
     parser.add_argument('--num-ways', type=int, default=5, help='Number of classes per task (N in "N-way", default: 5).')
     parser.add_argument('--first-order', action='store_true', help='Use the first-order approximation of MAML.')
-    parser.add_argument('--step-size', type=float, default=0.04, help='Step-size for the gradient step for adaptation (default: 0.4).')
+    parser.add_argument('--step-size', type=float, default=0.1, help='Step-size for the gradient step for adaptation (default: 0.4).')
     parser.add_argument('--hidden-size', type=int, default=64, help='Number of channels for each convolutional layer (default: 64).')
     parser.add_argument('--output-folder', type=str, default=None, help='Path to the output folder for saving the model (optional).')
     parser.add_argument('--batch-size', type=int, default=16, help='Number of tasks in a mini-batch of tasks (default: 16).')
-    parser.add_argument('--num-batches', type=int, default=300, help='Number of batches the model is trained over (default: 100).')
+    parser.add_argument('--num-batches', type=int, default=1000, help='Number of batches the model is trained over (default: 100).')
     parser.add_argument('--num-workers', type=int, default=1, help='Number of workers for data loading (default: 1).')
-    parser.add_argument('--download', action='store_true', help='Download the Omniglot dataset in the data folder.')
+    parser.add_argument('--download', action='store_true', help='Download the omniglot dataset in the data folder.')
     parser.add_argument('--use-cuda', action='store_true', help='Use CUDA if available.')
 
 
     args = parser.parse_args()
-    args.device = torch.device('cuda' if args.use_cuda
-        and torch.cuda.is_available() else 'cpu')
-
+    args.device = torch.device("cuda:1" if args.use_cuda and torch.cuda.is_available() else "cpu")
+    print('GPU available: ', torch.cuda.is_available())
     train(args)

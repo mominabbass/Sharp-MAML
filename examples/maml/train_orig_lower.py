@@ -4,23 +4,17 @@ import torch.nn.functional as F
 from tqdm import tqdm
 import logging
 import numpy as np
-from collections import OrderedDict
-from torchmeta.modules import MetaModule
-import time
-
 from torchmeta.datasets.helpers import omniglot
 #from torchmeta.datasets.helpers import miniimagenet
 from torchmeta.utils.data import BatchMetaDataLoader
+from torchmeta.modules import MetaModule
+from collections import OrderedDict
+import time
+
 #from torchmeta.utils.gradient_based import gradient_update_parameters
 
 from model import ConvolutionalNeuralNetwork
 from utils import get_accuracy
-from sam import SAM
-
-from sam_folder.model.smooth_cross_entropy import smooth_crossentropy
-from sam_folder.utility.bypass_bn import enable_running_stats, disable_running_stats
-from sam_folder.model.wide_res_net import WideResNet
-from sam_folder.utility.step_lr import StepLR
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +152,6 @@ def grad_norm(params_list, grads, adaptive):
            )
     return norm
 
-
 def train(args):
     logger.warning('This script is an example to showcase the MetaModule and '
                    'data-loading features of Torchmeta, and as such has been '
@@ -174,139 +167,90 @@ def train(args):
                        shuffle=True,
                        test_shots=15,
                        seed=0,
-                       meta_val=False,
-                       meta_test = True,
-                       meta_train=False,
-                       download=args.download,
-                       )
-
+                       meta_train=True,
+                       download=args.download)
     dataloader = BatchMetaDataLoader(dataset,
                                      batch_size=args.batch_size,
                                      shuffle=True,
                                      num_workers=args.num_workers)
 
-    model = ConvolutionalNeuralNetwork(1 ,args.num_ways, hidden_size=args.hidden_size, final_layer_size=64)
+    model = ConvolutionalNeuralNetwork(1,
+                                       args.num_ways,
+                                       hidden_size=args.hidden_size, 
+                                       final_layer_size=64)
     model.to(device=args.device)
     model.train()
-    # meta_optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    base_optimizer = torch.optim.Adam
-    # meta_optimizer = SAM(model.parameters(), base_optimizer, rho=0.05,
-    #                         adaptive=args.adap, lr=1e-6)
-    #scheduler = StepLR(meta_optimizer, 1e-6, args.num_batches)
-    
+    meta_optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
     print('rho: ', args.rho)
     print('SAM_lower: ', args.SAM_lower)
     print('Adaptive: ', args.adap)
-    meta_optimizer = SAM(model.parameters(), base_optimizer, rho=args.rho,
-                            adaptive=args.adap, lr=1e-3)
-    #scheduler = StepLR(meta_optimizer, 1e-3, args.num_batches)
 
     loss_acc_time_results = np.zeros((args.num_batches+1, 2))
+
 
     # Training loop
     start_time = time.time()
     with tqdm(dataloader, total=args.num_batches) as pbar:
         for batch_idx, batch in enumerate(pbar):
-            enable_running_stats(model)
-
             model.zero_grad()
 
             train_inputs, train_targets = batch['train']
-            #print(train_inputs.size())
+           
             train_inputs = train_inputs.to(device=args.device)
             train_targets = train_targets.to(device=args.device)
-            #print('batch: ', batch.keys())
 
             test_inputs, test_targets = batch['test']
             test_inputs = test_inputs.to(device=args.device)
             test_targets = test_targets.to(device=args.device)
 
-            # val_inputs, val_targets = batch['validation']
-            # val_inputs = val_inputs.to(device=args.device)
-            # val_targets = val_targets.to(device=args.device)
-            # print('val: ', val_inputs.size())
-
             outer_loss = torch.tensor(0., device=args.device)
-            outer_loss2 = torch.tensor(0., device=args.device)
-            #outer_temp =  torch.tensor(0., device=args.device)
-            #accuracy = torch.tensor(0., device=args.device)
+            accuracy = torch.tensor(0., device=args.device)
             for task_idx, (train_input, train_target, test_input,
                     test_target) in enumerate(zip(train_inputs, train_targets,
                     test_inputs, test_targets)):
                 train_logit = model(train_input)
                 inner_loss = F.cross_entropy(train_logit, train_target)
-                #inner_loss = smooth_crossentropy(train_logit, train_target, smoothing=0.000).mean()
 
                 model.zero_grad()
-                # params = gradient_update_parameters(model, inner_loss, step_size=args.step_size,
+                # params = gradient_update_parameters(model,
+                #                                     inner_loss,
+                #                                     step_size=args.step_size,
                 #                                     first_order=args.first_order)
-                                
-                params = gradient_update_parameters_new(model,train_input, train_target, inner_loss, step_size=args.step_size,
-                                                    first_order=args.first_order, adaptive = args.adap, 
-                                                    rho = args.rho, sam_lower = args.SAM_lower)
+                params = gradient_update_parameters_new(model,train_input, train_target, 
+                                                        inner_loss, step_size=args.step_size,
+                                                        first_order=args.first_order, adaptive = args.adap,
+                                                         rho = args.rho, sam_lower = args.SAM_lower)
 
+
+                
                 test_logit = model(test_input, params=params)
                 outer_loss += F.cross_entropy(test_logit, test_target)
-                #outer_loss += smooth_crossentropy(test_logit, test_target, smoothing=0.00).mean()
-             
-                # with torch.no_grad():
-                #     accuracy += get_accuracy(test_logit, test_target)
-                #     #scheduler(batch_idx)
 
-            outer_loss.div_(args.batch_size)            
-            #accuracy.div_(args.batch_size)
+                with torch.no_grad():
+                    accuracy += get_accuracy(test_logit, test_target)
+
+
+            outer_loss.div_(args.batch_size)
+            accuracy.div_(args.batch_size)
 
             outer_loss.backward()
-            meta_optimizer.first_step(zero_grad=True)
-            
-            disable_running_stats(model)
-            accuracy2 = torch.tensor(0., device=args.device)
+            meta_optimizer.step()
 
-            for task_idx, (train_input, train_target, test_input,
-                    test_target) in enumerate(zip(train_inputs, train_targets,
-                    test_inputs, test_targets)):
-                train_logit = model(train_input)
-                inner_loss = F.cross_entropy(train_logit, train_target)
-                #inner_loss = smooth_crossentropy(train_logit, train_target, smoothing=0.00).mean()
+            print('test_loss: ', outer_loss)
 
-                model.zero_grad()
 
-                # params = gradient_update_parameters(model, inner_loss, step_size=args.step_size,
-                #                                     first_order=args.first_order)                     
-                params = gradient_update_parameters_new(model,train_input, train_target, inner_loss, step_size=args.step_size,
-                                                    first_order=args.first_order, adaptive = args.adap, rho = args.rho, sam_lower = args.SAM_lower)
+            loss_acc_time_results[batch_idx, 0] = accuracy.item()
+            loss_acc_time_results[batch_idx, 1] = outer_loss.item()
 
-                test_logit = model(test_input, params=params)
-                outer_loss2 += F.cross_entropy(test_logit, test_target)
-                #outer_loss2 += smooth_crossentropy(test_logit, test_target, smoothing=0.00).mean()
-                
-                with torch.no_grad():
-                    accuracy2 += get_accuracy(test_logit, test_target)
-                    #scheduler(batch_idx)
-
-            outer_loss2.div_(args.batch_size)
-            accuracy2.div_(args.batch_size)
-
-            outer_loss2.backward()
-            meta_optimizer.second_step(zero_grad=True)
-
-            print('test_loss: ', outer_loss2)
-
-            loss_acc_time_results[batch_idx, 0] = accuracy2.item()
-            loss_acc_time_results[batch_idx, 1] = outer_loss2.item()
-
-            pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy2.item()))
+            pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
             if batch_idx >= args.num_batches:
                 break
-    
 
     print('Training finished, took {:.2f}s'.format(time.time() - start_time))
     print(loss_acc_time_results)
 
-    if args.SAM_lower:
-        file_name = 'results_BiSAM_{}_omniglot_20way_1shot_both_t{}.npy'.format(args.rho, args.trial)
-    else:
-        file_name = 'results_BiSAM_{}_omniglot_20way_1shot_upper_t{}.npy'.format(args.rho, args.trial)
+    file_name = 'results_BiSAM_{}_omniglot_20way_1shot_lower_t{}.npy'.format(args.rho, args.trial)
     file_addr = os.path.join('./save_results_omni', file_name)
     with open(file_addr, 'wb') as f:
             np.save(f, loss_acc_time_results)   
@@ -321,7 +265,6 @@ def train(args):
 
 if __name__ == '__main__':
     import argparse
-
     parser = argparse.ArgumentParser('Model-Agnostic Meta-Learning (MAML)')
 
     parser.add_argument('folder', type=str, help='Path to the folder the data is downloaded to.')
@@ -330,7 +273,7 @@ if __name__ == '__main__':
     parser.add_argument('--first-order', action='store_true', help='Use the first-order approximation of MAML.')
     parser.add_argument('--step-size', type=float, default=0.1, help='Step-size for the gradient step for adaptation (default: 0.4).')
     parser.add_argument('--SAM_lower', type=bool, default=True, help='Apply SAM on inner MAML update')
-    parser.add_argument('--rho', type=float, default=0.00005, help='radius rho for SAM')
+    parser.add_argument('--rho', type=float, default=0.05, help='radius rho for SAM')
     parser.add_argument('--adap', type=bool, default=False, help='Apply ASAM (adaptive SAM) on MAML')
     parser.add_argument('--hidden-size', type=int, default=64, help='Number of channels for each convolutional layer (default: 64).')
     parser.add_argument('--output-folder', type=str, default=None, help='Path to the output folder for saving the model (optional).')
@@ -345,5 +288,3 @@ if __name__ == '__main__':
     args.device = torch.device("cuda:{}".format(args.trial) if args.use_cuda and torch.cuda.is_available() else "cpu")
     print('GPU available: ', torch.cuda.is_available())
     train(args)
-
-
