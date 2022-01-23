@@ -1,2 +1,2 @@
-# BiSAM
-Bilevel Optimization using Sharpness Aware Minimization
+# Sharp-MAML
+Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning
