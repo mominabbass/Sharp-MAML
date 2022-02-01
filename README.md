@@ -1,14 +1,14 @@
 # Sharp-MAML
 
-###Platform
+### Platform
 * Python: 3.9.7
 * Pytorch: 1.11.0
 
-###Sharp-MAML (lower)
+### Sharp-MAML (lower)
 To run Sharp-MAML_lower use:
 python3 train_lower.py data --num-shot 1 --num-ways 20 --download --use-cuda
 
-###Sharp-MAML (upper/both)
+### Sharp-MAML (upper/both)
 To run Sharp-MAML_upper or Sharp-MAML_both use: (set SAM_lower as False to use only Sharp-MAML_upper)
 python3 train_both.py data --num-shot 1 --num-ways 20 --download --use-cuda
 
