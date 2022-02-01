@@ -21,7 +21,7 @@ Note: set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
 ### Save Model
 After training, the trained model file is saved in the '/save_results' folder in '.th' file format using the model’s state_dict with the torch.save() function. The saved model can be loaded and used to test the model on the held-out testing dataset using model.load_state_dict(torch.load(PATH)).
 
-# Model-Agnostic Meta-Learning (MML)
+# Model-Agnostic Meta-Learning (MAML)
 
 > Chelsea Finn, Pieter Abbeel, Sergey Levine. Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks. *International Conference on Machine Learning (ICML)*, 2017 [[ArXiv](https://arxiv.org/abs/1703.03400)]
 
