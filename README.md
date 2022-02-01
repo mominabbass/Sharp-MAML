@@ -3,7 +3,7 @@
 * Python: 3.9.7
 * Pytorch: 1.11.0
 
-###Model 
+### Model 
 We use the standard baseline 4-layer convolutional NN model comprising of 4 modules with a 3 × 3 convolutions with 64 filters followed by batch normalization, a ReLU non-linearity, and a 2 × 2 max-pooling.
 
 ### Sharp-MAML (lower)
