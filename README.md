@@ -16,7 +16,7 @@ python3 train_both.py data --num-shot 1 --num-ways 20 --download --use-cuda
 Note: set the argument 'SAM_lower' as 'False' to use only Sharp-MAML_upper
 
 ### Save Model
-The code saves the trained model file in the '/save_results' folder in '.th' file format that can be used to test the model on the held-out testing dataset.
+The code saves the trained model file in the '/save_results' folder in '.th' file format using the model’s state_dict with the torch.save() function. The saved model can be loaded and used to test the model on the held-out testing dataset.
 
 # Model-Agnostic Meta-Learning (MAML)
 
