@@ -1,14 +1,4 @@
-# MetaAdv
-### Platform
-* Python: 3.7
-* PyTorch: 1.5.0
-### Dataset
-We use the benchmark dataset MiniImageNet, which can be download [here](https://drive.google.com/file/d/1HkgrkAwukzEZA0TpO7010PkAOREb2Nuk/view) and [here](https://github.com/twitter/meta-learning-lstm/tree/master/data/miniImagenet). CIFARFS and Omniglot can be found in the package torchmeta [here](https://github.com/tristandeleu/pytorch-meta)
-### Model
-
-
 # Sharp-MAML
-
 ### Platform
 * Python: 3.9.7
 * Pytorch: 1.11.0
@@ -16,7 +6,6 @@ We use the benchmark dataset MiniImageNet, which can be download [here](https://
 ### Sharp-MAML (lower)
 To run Sharp-MAML_lower use:
 python3 train_lower.py data --num-shot 1 --num-ways 20 --download --use-cuda
-
 ### Sharp-MAML (upper/both)
 To run Sharp-MAML_upper or Sharp-MAML_both use: 
 python3 train_both.py data --num-shot 1 --num-ways 20 --download --use-cuda
