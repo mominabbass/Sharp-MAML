@@ -4,7 +4,7 @@
 * Pytorch: 1.11.0
 
 ### Sharp-MAML (lower)
-To run Sharp-MAML_lower use:
+To run Sharp-MAML$_lower$ use:
 ```bash
 python3 train_lower.py data --num-shot 1 --num-ways 20 --download --use-cuda
 ```
