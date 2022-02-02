@@ -9,14 +9,122 @@ from torchmeta.utils.data import BatchMetaDataLoader
 from torchmeta.modules import MetaModule
 from collections import OrderedDict
 import time
-
-#from torchmeta.utils.gradient_based import gradient_update_parameters
-
+import math
+from maml.datasets import get_benchmark_by_name
+from maml.utils import tensors_to_device, compute_accuracy
+from torchmeta.utils.gradient_based import gradient_update_parameters
 from model import ConvolutionalNeuralNetwork
 from utils import get_accuracy
 
 logger = logging.getLogger(__name__)
 
+def evaluate(model, dataloader, max_batches=500, verbose=True, **kwargs):
+    mean_outer_loss, mean_accuracy, count = 0., 0., 0
+    with tqdm(total=max_batches, disable=not verbose, **kwargs) as pbar:
+        for results in evaluate_iter(model, dataloader, max_batches=max_batches):
+            pbar.update(1)
+            count += 1
+            mean_outer_loss += (results['mean_outer_loss']
+                                - mean_outer_loss) / count
+            postfix = {'loss': '{0:.4f}'.format(mean_outer_loss)}
+            if 'accuracies_after' in results:
+                mean_accuracy += (np.mean(results['accuracies_after'])
+                                  - mean_accuracy) / count
+                postfix['accuracy'] = '{0:.4f}'.format(mean_accuracy)
+            pbar.set_postfix(**postfix)
+
+    mean_results = {'mean_outer_loss': mean_outer_loss}
+    if 'accuracies_after' in results:
+        mean_results['accuracies_after'] = mean_accuracy
+
+    return mean_results
+
+def evaluate_iter(model, dataloader, max_batches=500, device=torch.device("cuda:1" if torch.cuda.is_available() else "cpu")):
+    num_batches = 0
+    model.eval()
+    while num_batches < max_batches:
+        for batch in dataloader:
+            if num_batches >= max_batches:
+                break
+
+            batch = tensors_to_device(batch, device=device)
+            _, results = get_outer_loss(model, batch)
+            yield results
+
+            num_batches += 1
+
+
+def get_outer_loss(model, batch):
+    if 'test' not in batch:
+        raise RuntimeError('The batch does not contain any test dataset.')
+
+    _, test_targets = batch['test']
+    num_tasks = test_targets.size(0)
+    is_classification_task = (not test_targets.dtype.is_floating_point)
+    results = {
+        'num_tasks': num_tasks,
+        'inner_losses': np.zeros((1,
+            num_tasks), dtype=np.float32),
+        'outer_losses': np.zeros((num_tasks,), dtype=np.float32),
+        'mean_outer_loss': 0.
+    }
+    if is_classification_task:
+        results.update({
+            'accuracies_before': np.zeros((num_tasks,), dtype=np.float32),
+            'accuracies_after': np.zeros((num_tasks,), dtype=np.float32)
+        })
+
+    mean_outer_loss = torch.tensor(0., device=torch.device("cuda:1" if torch.cuda.is_available() else "cpu"))
+    for task_id, (train_inputs, train_targets, test_inputs, test_targets) \
+            in enumerate(zip(*batch['train'], *batch['test'])):
+        params, adaptation_results = adapt(model, train_inputs, train_targets,
+            is_classification_task=is_classification_task,
+            num_adaptation_steps=1,
+            step_size=0.1, first_order=False)
+        loss_function=F.cross_entropy
+        results['inner_losses'][:, task_id] = adaptation_results['inner_losses']
+        if is_classification_task:
+            results['accuracies_before'][task_id] = adaptation_results['accuracy_before']
+
+        with torch.set_grad_enabled(model.training):
+            test_logits = model(test_inputs, params=params)
+            outer_loss = loss_function(test_logits, test_targets)
+            results['outer_losses'][task_id] = outer_loss.item()
+            mean_outer_loss += outer_loss
+
+        if is_classification_task:
+            results['accuracies_after'][task_id] = compute_accuracy(
+                test_logits, test_targets)
+
+    mean_outer_loss.div_(num_tasks)
+    results['mean_outer_loss'] = mean_outer_loss.item()
+
+    return mean_outer_loss, results
+
+
+def adapt(model, inputs, targets, is_classification_task=None,
+          num_adaptation_steps=1, step_size=0.1, first_order=False):
+    if is_classification_task is None:
+        is_classification_task = (not targets.dtype.is_floating_point)
+    params = None
+    loss_function=F.cross_entropy
+    results = {'inner_losses': np.zeros(
+        (num_adaptation_steps,), dtype=np.float32)}
+
+    for step in range(num_adaptation_steps):
+        logits = model(inputs, params=params)
+        inner_loss = loss_function(logits, targets)
+        results['inner_losses'][step] = inner_loss.item()
+
+        if (step == 0) and is_classification_task:
+            results['accuracy_before'] = compute_accuracy(logits, targets)
+
+        model.zero_grad()
+        params = gradient_update_parameters(model, inner_loss,
+            step_size=step_size, params=params,
+            first_order=(not model.training) or first_order)
+
+    return params, results
 
 def gradient_update_parameters_new(model,
                                train_input,
@@ -127,6 +235,7 @@ def grad_norm(params_list, grads, adaptive):
 def train(args):
     logger.warning('Sharp-MAML training in progress')
 
+
     dataset = omniglot(args.folder,
                        shots=args.num_shots,
                        ways=args.num_ways,
@@ -139,6 +248,19 @@ def train(args):
                                      batch_size=args.batch_size,
                                      shuffle=True,
                                      num_workers=args.num_workers)
+
+    benchmark = get_benchmark_by_name(args.dataset,
+                                      args.folder,
+                                      args.num_ways,
+                                      args.num_shots,
+                                      args.num_shots_test,
+                                      hidden_size=args.hidden_size)
+
+    meta_test_dataloader = BatchMetaDataLoader(benchmark.meta_test_dataset,
+                                              batch_size=args.batch_size,
+                                              shuffle=True,
+                                              num_workers=args.num_workers,
+                                              pin_memory=True)
     model = ConvolutionalNeuralNetwork(1,
                                        args.num_ways,
                                        hidden_size=args.hidden_size, 
@@ -150,53 +272,64 @@ def train(args):
     print('alpha: ', args.alpha)
     print('SAM_lower: ', args.SAM_lower)
 
-    loss_acc_time_results = np.zeros((args.num_batches+1, 2))
+    loss_acc_time_results = np.zeros((args.num_epochs+1, 2))
 
-    # Training loop
+    epoch_desc = 'Epoch {{0: <{0}d}}'.format(1 + int(math.log10(args.num_epochs)))
     start_time = time.time()
-    with tqdm(dataloader, total=args.num_batches) as pbar:
-        for batch_idx, batch in enumerate(pbar):
-            model.zero_grad()
-            train_inputs, train_targets = batch['train']
-            train_inputs = train_inputs.to(device=args.device)
-            train_targets = train_targets.to(device=args.device)
-
-            test_inputs, test_targets = batch['test']
-            test_inputs = test_inputs.to(device=args.device)
-            test_targets = test_targets.to(device=args.device)
-
-            outer_loss = torch.tensor(0., device=args.device)
-            accuracy = torch.tensor(0., device=args.device)
-            for task_idx, (train_input, train_target, test_input,
-                    test_target) in enumerate(zip(train_inputs, train_targets,
-                    test_inputs, test_targets)):
-                train_logit = model(train_input)
-                inner_loss = F.cross_entropy(train_logit, train_target)
-
+    # Training loop
+    for epoch in range(args.num_epochs):
+        print('\n\n\nEpoch#: ', epoch)
+        with tqdm(dataloader, total=args.num_batches) as pbar:
+            for batch_idx, batch in enumerate(pbar):
                 model.zero_grad()
-                params = gradient_update_parameters_new(model,train_input, train_target, 
-                                                        inner_loss, step_size=args.step_size,
-                                                        first_order=args.first_order, adaptive = args.adap,
-                                                         alpha = args.alpha, sam_lower = args.SAM_lower)
-                test_logit = model(test_input, params=params)
-                outer_loss += F.cross_entropy(test_logit, test_target)
 
-                with torch.no_grad():
-                    accuracy += get_accuracy(test_logit, test_target)
-            outer_loss.div_(args.batch_size)
-            accuracy.div_(args.batch_size)
-            outer_loss.backward()
-            meta_optimizer.step()
+                train_inputs, train_targets = batch['train']
+                train_inputs = train_inputs.to(device=args.device)
+                train_targets = train_targets.to(device=args.device)
 
-            print('test_loss: ', outer_loss)
-            loss_acc_time_results[batch_idx, 0] = accuracy.item()
-            loss_acc_time_results[batch_idx, 1] = outer_loss.item()
+                val_inputs, val_targets = batch['test']
+                val_inputs = val_inputs.to(device=args.device)
+                val_targets = val_targets.to(device=args.device)
 
-            pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
-            if batch_idx >= args.num_batches:
-                break
+                outer_loss = torch.tensor(0., device=args.device)
+                accuracy = torch.tensor(0., device=args.device)
+                for task_idx, (train_input, train_target, val_input,
+                        val_target) in enumerate(zip(train_inputs, train_targets,
+                        val_inputs, val_targets)):
+                    train_logit = model(train_input)
+                    inner_loss = F.cross_entropy(train_logit, train_target)
 
-    print('SAM Training finished, took {:.2f}s'.format(time.time() - start_time))
+                    model.zero_grad()
+                    params = gradient_update_parameters_new(model,train_input, train_target,
+                                                            inner_loss, step_size=args.step_size,
+                                                            first_order=args.first_order, adaptive = args.adap,
+                                                             alpha = args.alpha, sam_lower = args.SAM_lower)
+                    val_logit = model(val_input, params=params)
+                    outer_loss += F.cross_entropy(val_logit, val_target)
+
+                    with torch.no_grad():
+                        accuracy += get_accuracy(val_logit, val_target)
+                outer_loss.div_(args.batch_size)
+                accuracy.div_(args.batch_size)
+                outer_loss.backward()
+                meta_optimizer.step()
+
+                print('outer_val_loss: ', outer_loss)
+                pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
+
+                if batch_idx % 25 == 0:
+                    results = evaluate(model, meta_test_dataloader,
+                                        max_batches=args.num_batches,
+                                        verbose=args.verbose,
+                                        desc=epoch_desc.format(epoch + 1))
+                    print('\n\n\n test results: ', results)
+
+                if batch_idx >= args.num_batches:
+                    break
+        loss_acc_time_results[epoch, 0] = accuracy.item()
+        loss_acc_time_results[epoch, 1] = outer_loss.item()
+
+    print('Training finished, took {:.2f}s'.format(time.time() - start_time))
     print(loss_acc_time_results)
 
     file_name = 'results_Sharp_MAML_omniglot_alpha_{}_ways_{}_shots_{}_lower.npy'.format(args.alpha, args.num_ways, args.num_shots)
@@ -220,6 +353,14 @@ if __name__ == '__main__':
     parser.add_argument('--num-shots', type=int, default=1, help='Number of examples per class (k in "k-shot", default: 5).')
     parser.add_argument('--num-ways', type=int, default=20, help='Number of classes per task (N in "N-way", default: 5).')
     parser.add_argument('--first-order', action='store_true', help='Use the first-order approximation of MAML.')
+    parser.add_argument('--dataset', type=str,
+                        choices=['sinusoid', 'omniglot', 'miniimagenet'], default='omniglot',
+                        help='Name of the dataset (default: omniglot).')
+    parser.add_argument('--num-shots-test', type=int, default=15,
+                        help='Number of test example per class. If negative, same as the number '
+                             'of training examples `--num-shots` (default: 15).')
+    parser.add_argument('--num-epochs', type=int, default=100,
+                        help='Number of epochs of meta-training (default: 50).')
     parser.add_argument('--step-size', type=float, default=0.1, help='Step-size for the gradient step for adaptation (default: 0.1).')
     parser.add_argument('--SAM_lower', type=bool, default=True, help='Apply SAM on inner MAML update')
     parser.add_argument('--alpha', type=float, default=0.0005, help='perturbation radius alpha for SAM')
@@ -227,12 +368,17 @@ if __name__ == '__main__':
     parser.add_argument('--hidden-size', type=int, default=64, help='Number of channels for each convolutional layer (default: 64).')
     parser.add_argument('--output-folder', type=str, default=None, help='Path to the output folder for saving the model (optional).')
     parser.add_argument('--batch-size', type=int, default=16, help='Number of tasks in a mini-batch of tasks (default: 16).')
-    parser.add_argument('--num-batches', type=int, default=2000, help='Number of batches the model is trained over (default: 1000).')
+    parser.add_argument('--num-batches', type=int, default=100, help='Number of batches the model is trained over (default: 100).')
     parser.add_argument('--num-workers', type=int, default=1, help='Number of workers for data loading (default: 1).')
+    parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--download', action='store_true', help='Download the omniglot dataset in the data folder.')
     parser.add_argument('--use-cuda', action='store_true', help='Use CUDA if available.')
 
+
+
     args = parser.parse_args()
-    args.device = torch.device("cuda:0" if args.use_cuda and torch.cuda.is_available() else "cpu")
+    if args.num_shots_test <= 0:
+        args.num_shots_test = args.num_shots
+    args.device = torch.device("cuda:1" if args.use_cuda and torch.cuda.is_available() else "cpu")
     print('GPU available: ', torch.cuda.is_available())
     train(args)
