@@ -9,12 +9,12 @@ Standard baseline 4-layer convolutional NN model comprising of 4 modules with a 
 ### Sharp-MAML (lower)
 To run Sharp-MAML (lower) use:
 ```bash
-python3 train_lower.py data --num-shot 1 --num-ways 20 --download --use-cuda
+python3 train_lower.py data --num-shots 1 --num-ways 20 --download --use-cuda
 ```
 ### Sharp-MAML (upper/both)
 To run Sharp-MAML (upper) or Sharp-MAML (both) use: 
 ```bash
-python3 train_both.py data --num-shot 1 --num-ways 20 --download --use-cuda
+python3 train_both.py data --num-shots 1 --num-ways 20 --download --use-cuda
 ```
 Note: set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
 
