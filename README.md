@@ -26,7 +26,7 @@ After training, the trained model file is saved in the '/save_results' folder in
 > Chelsea Finn, Pieter Abbeel, Sergey Levine. Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks. *International Conference on Machine Learning (ICML)*, 2017 [[ArXiv](https://arxiv.org/abs/1703.03400)]
 
 ### Citation
-
+If you use this code, please cite the following reference:
 ```
 @article{finn17maml,
   author    = {Chelsea Finn and Pieter Abbeel and Sergey Levine},
