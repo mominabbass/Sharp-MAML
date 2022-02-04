@@ -30,7 +30,7 @@ If you use this code, please cite the following reference:
 ```
 @article{finn17maml,
   author    = {Momin Abbas and Quan Xiao and Lisha Chen and Pin-Yu Chen and Tianyi Chen},
-  title     = {{Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning}},
+  title     = {Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning},
   journal   = {///},
   year      = {2022},
   url       = {http://}
