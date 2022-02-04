@@ -269,6 +269,7 @@ def train(args):
     model.train()
     meta_optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
+    print('\n\ndataset: ', args.dataset)
     print('alpha: ', args.alpha)
     print('SAM_lower: ', args.SAM_lower)
 
@@ -314,7 +315,7 @@ def train(args):
                 outer_loss.backward()
                 meta_optimizer.step()
 
-                print('outer_val_loss: ', outer_loss)
+                print('outer_loss: ', outer_loss)
                 pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
 
                 if batch_idx % 25 == 0:
@@ -322,7 +323,7 @@ def train(args):
                                         max_batches=args.num_batches,
                                         verbose=args.verbose,
                                         desc=epoch_desc.format(epoch + 1))
-                    print('\n\n\n test results: ', results)
+                    print('\n\n\n results: ', results)
 
                 if batch_idx >= args.num_batches:
                     break
@@ -359,8 +360,8 @@ if __name__ == '__main__':
     parser.add_argument('--num-shots-test', type=int, default=15,
                         help='Number of test example per class. If negative, same as the number '
                              'of training examples `--num-shots` (default: 15).')
-    parser.add_argument('--num-epochs', type=int, default=100,
-                        help='Number of epochs of meta-training (default: 50).')
+    parser.add_argument('--num-epochs', type=int, default=600,
+                        help='Number of epochs of meta-training (default: 600).')
     parser.add_argument('--step-size', type=float, default=0.1, help='Step-size for the gradient step for adaptation (default: 0.1).')
     parser.add_argument('--SAM_lower', type=bool, default=True, help='Apply SAM on inner MAML update')
     parser.add_argument('--alpha', type=float, default=0.0005, help='perturbation radius alpha for SAM')
