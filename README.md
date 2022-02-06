@@ -12,11 +12,11 @@ To run Sharp-MAML (lower) use:
 python3 train_lower.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
 ```
 ### Sharp-MAML (upper)
-To run Sharp-MAML (upper)use: 
+To run Sharp-MAML (upper) use: 
 ```bash
 python3 train_both.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
 ```
-Note: In the args list, set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
+Note: In the train_both.py file, set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
 
 ### Sharp-MAML (both)
 To run Sharp-MAML (both) or Sharp-MAML (both) use: 
