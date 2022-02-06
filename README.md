@@ -11,12 +11,19 @@ To run Sharp-MAML (lower) use:
 ```bash
 python3 train_lower.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
 ```
-### Sharp-MAML (upper/both)
-To run Sharp-MAML (upper) or Sharp-MAML (both) use: 
+### Sharp-MAML (upper)
+To run Sharp-MAML (upper)use: 
 ```bash
 python3 train_both.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
 ```
-Note: set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
+Note: In the args list, set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
+
+### Sharp-MAML (both)
+To run Sharp-MAML (both) or Sharp-MAML (both) use: 
+```bash
+python3 train_both.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
+```
+Note: In the train_both.py file, set the argument 'SAM_lower' as 'True' to use Sharp-MAML (both)
 
 ### Save Model
 After training, the trained model file is saved in the '/save_results' folder in '.th' file format using the model’s state_dict with the torch.save() function. The saved model can be loaded and used to test the model on the held-out testing dataset using model.load_state_dict(torch.load(PATH)).
