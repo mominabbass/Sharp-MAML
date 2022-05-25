@@ -35,11 +35,11 @@ After training, the trained model file is saved in the '/save_results' folder in
 ### Citation
 If you use this code, please cite the following reference:
 ```
-@article{finn17maml,
-  author    = {Momin Abbas and Quan Xiao and Lisha Chen and Pin-Yu Chen and Tianyi Chen},
-  title     = {Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning},
-  journal   = {///},
-  year      = {2022},
-  url       = {http://}
-}
+@inproceedings{Abbas,
+ author    = {Momin Abbas and Quan Xiao and Lisha Chen and Pin-Yu Chen and Tianyi Chen},
+ title     = {Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning},
+ year      = {2022},
+ booktitle     = {Proceedings of International Conference on Machine Learning},
+ address   = {Maryland, MD},
+ }
 ```
