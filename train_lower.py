@@ -18,114 +18,6 @@ from utils import get_accuracy
 
 logger = logging.getLogger(__name__)
 
-def evaluate(model, dataloader, max_batches=500, verbose=True, **kwargs):
-    mean_outer_loss, mean_accuracy, count = 0., 0., 0
-    with tqdm(total=max_batches, disable=not verbose, **kwargs) as pbar:
-        for results in evaluate_iter(model, dataloader, max_batches=max_batches):
-            pbar.update(1)
-            count += 1
-            mean_outer_loss += (results['mean_outer_loss']
-                                - mean_outer_loss) / count
-            postfix = {'loss': '{0:.4f}'.format(mean_outer_loss)}
-            if 'accuracies_after' in results:
-                mean_accuracy += (np.mean(results['accuracies_after'])
-                                  - mean_accuracy) / count
-                postfix['accuracy'] = '{0:.4f}'.format(mean_accuracy)
-            pbar.set_postfix(**postfix)
-
-    mean_results = {'mean_outer_loss': mean_outer_loss}
-    if 'accuracies_after' in results:
-        mean_results['accuracies_after'] = mean_accuracy
-
-    return mean_results
-
-def evaluate_iter(model, dataloader, max_batches=500, device=torch.device("cuda:1" if torch.cuda.is_available() else "cpu")):
-    num_batches = 0
-    model.eval()
-    while num_batches < max_batches:
-        for batch in dataloader:
-            if num_batches >= max_batches:
-                break
-
-            batch = tensors_to_device(batch, device=device)
-            _, results = get_outer_loss(model, batch)
-            yield results
-
-            num_batches += 1
-
-
-def get_outer_loss(model, batch):
-    if 'test' not in batch:
-        raise RuntimeError('The batch does not contain any test dataset.')
-
-    _, test_targets = batch['test']
-    num_tasks = test_targets.size(0)
-    is_classification_task = (not test_targets.dtype.is_floating_point)
-    results = {
-        'num_tasks': num_tasks,
-        'inner_losses': np.zeros((1,
-            num_tasks), dtype=np.float32),
-        'outer_losses': np.zeros((num_tasks,), dtype=np.float32),
-        'mean_outer_loss': 0.
-    }
-    if is_classification_task:
-        results.update({
-            'accuracies_before': np.zeros((num_tasks,), dtype=np.float32),
-            'accuracies_after': np.zeros((num_tasks,), dtype=np.float32)
-        })
-
-    mean_outer_loss = torch.tensor(0., device=torch.device("cuda:1" if torch.cuda.is_available() else "cpu"))
-    for task_id, (train_inputs, train_targets, test_inputs, test_targets) \
-            in enumerate(zip(*batch['train'], *batch['test'])):
-        params, adaptation_results = adapt(model, train_inputs, train_targets,
-            is_classification_task=is_classification_task,
-            num_adaptation_steps=1,
-            step_size=0.1, first_order=False)
-        loss_function=F.cross_entropy
-        results['inner_losses'][:, task_id] = adaptation_results['inner_losses']
-        if is_classification_task:
-            results['accuracies_before'][task_id] = adaptation_results['accuracy_before']
-
-        with torch.set_grad_enabled(model.training):
-            test_logits = model(test_inputs, params=params)
-            outer_loss = loss_function(test_logits, test_targets)
-            results['outer_losses'][task_id] = outer_loss.item()
-            mean_outer_loss += outer_loss
-
-        if is_classification_task:
-            results['accuracies_after'][task_id] = compute_accuracy(
-                test_logits, test_targets)
-
-    mean_outer_loss.div_(num_tasks)
-    results['mean_outer_loss'] = mean_outer_loss.item()
-
-    return mean_outer_loss, results
-
-
-def adapt(model, inputs, targets, is_classification_task=None,
-          num_adaptation_steps=1, step_size=0.1, first_order=False):
-    if is_classification_task is None:
-        is_classification_task = (not targets.dtype.is_floating_point)
-    params = None
-    loss_function=F.cross_entropy
-    results = {'inner_losses': np.zeros(
-        (num_adaptation_steps,), dtype=np.float32)}
-
-    for step in range(num_adaptation_steps):
-        logits = model(inputs, params=params)
-        inner_loss = loss_function(logits, targets)
-        results['inner_losses'][step] = inner_loss.item()
-
-        if (step == 0) and is_classification_task:
-            results['accuracy_before'] = compute_accuracy(logits, targets)
-
-        model.zero_grad()
-        params = gradient_update_parameters(model, inner_loss,
-            step_size=step_size, params=params,
-            first_order=(not model.training) or first_order)
-
-    return params, results
-
 def gradient_update_parameters_new(model,
                                train_input,
                                train_target,
@@ -249,18 +141,6 @@ def train(args):
                                      shuffle=True,
                                      num_workers=args.num_workers)
 
-    benchmark = get_benchmark_by_name(args.dataset,
-                                      args.folder,
-                                      args.num_ways,
-                                      args.num_shots,
-                                      args.num_shots_test,
-                                      hidden_size=args.hidden_size)
-
-    meta_test_dataloader = BatchMetaDataLoader(benchmark.meta_test_dataset,
-                                              batch_size=args.batch_size,
-                                              shuffle=True,
-                                              num_workers=args.num_workers,
-                                              pin_memory=True)
     model = ConvolutionalNeuralNetwork(1,
                                        args.num_ways,
                                        hidden_size=args.hidden_size, 
@@ -276,6 +156,7 @@ def train(args):
     loss_acc_time_results = np.zeros((args.num_epochs+1, 2))
 
     epoch_desc = 'Epoch {{0: <{0}d}}'.format(1 + int(math.log10(args.num_epochs)))
+    best_acc = 0.0
     start_time = time.time()
     # Training loop
     for epoch in range(args.num_epochs):
@@ -318,12 +199,18 @@ def train(args):
                 print('outer_loss: ', outer_loss)
                 pbar.set_postfix(accuracy='{0:.4f}'.format(accuracy.item()))
 
-                if batch_idx % 25 == 0:
-                    results = evaluate(model, meta_test_dataloader,
-                                        max_batches=args.num_batches,
-                                        verbose=args.verbose,
-                                        desc=epoch_desc.format(epoch + 1))
-                    print('\n\n\n results: ', results)
+                if accuracy > best_acc:
+                    logger.warning('\n\nAcc improved over validation set from {:.3f}% ---> {:.3f}%'.format(best_acc, accuracy))
+
+                    best_acc = accuracy
+
+                    # Save best model
+                    filename = os.path.join('save_results', 'sharp-maml_omniglot_'
+                                                                '{0}shot_{1}way.th'.format(args.num_shots,
+                                                                                           args.num_ways))
+                    with open(filename, 'wb') as f:
+                        state_dict = model.state_dict()
+                        torch.save(state_dict, f)
 
                 if batch_idx >= args.num_batches:
                     break
@@ -338,13 +225,6 @@ def train(args):
     with open(file_addr, 'wb') as f:
             np.save(f, loss_acc_time_results)   
 
-    # Save model
-    if args.output_folder is not None:
-        filename = os.path.join(args.output_folder, 'maml_omniglot_'
-            '{0}shot_{1}way.th'.format(args.num_shots, args.num_ways))
-        with open(filename, 'wb') as f:
-            state_dict = model.state_dict()
-            torch.save(state_dict, f)
 
 if __name__ == '__main__':
     import argparse
@@ -374,8 +254,6 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--download', action='store_true', help='Download the omniglot dataset in the data folder.')
     parser.add_argument('--use-cuda', action='store_true', help='Use CUDA if available.')
-
-
 
     args = parser.parse_args()
     if args.num_shots_test <= 0:
