@@ -1,8 +1,8 @@
-# Sharp-MAML
-
 ### **Disclaimer**
 
 When we finalize this repository, we find a critical bug in the testing script of sharp-maml. I will update the repository with the current results shortly. Thanks for your interest on our work and patience.
+
+# Sharp-MAML
 
 ### Platform
 * Python: 3.9.7
