@@ -1,50 +1,48 @@
-# **Disclaimer**
+# Model-Agnostic Meta-Learning
+[![Documentation](https://img.shields.io/badge/1.5-PyTorch-EE4C2C)](https://pytorch.org/)
 
-When we finalize this repository, we find a critical bug in the testing script of sharp-maml. I will update the repository with the current results shortly. Thanks for your interest on our work and patience.
+An implementation of Model-Agnostic Meta-Learning (MAML) in [PyTorch](https://pytorch.org/) with [Torchmeta](https://github.com/tristandeleu/pytorch-meta).
 
-## Sharp-MAML
-
-### Platform
-* Python: 3.9.7
-* Pytorch: 1.11.0
-
-### Model 
-Standard baseline 4-layer convolutional NN model comprising of 4 modules with a 3 × 3 convolutions with 64 filters followed by batch normalization, a ReLU non-linearity, and a 2 × 2 max-pooling.
-
-### Sharp-MAML (lower)
-To run Sharp-MAML (lower) use:
+### Getting started
+To avoid any conflict with your existing Python setup, it is suggested to work in a virtual environment with [`virtualenv`](https://docs.python-guide.org/dev/virtualenvs/). To install `virtualenv`:
 ```bash
-python3 train_lower.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
+pip install --upgrade virtualenv
 ```
-### Sharp-MAML (upper)
-To run Sharp-MAML (upper) use: 
+Create a virtual environment, activate it and install the requirements in [`requirements.txt`](requirements.txt).
 ```bash
-python3 train_both.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
-Note: In the train_both.py file, set the argument 'SAM_lower' as 'False' to use only Sharp-MAML (upper)
 
-### Sharp-MAML (both)
-To run Sharp-MAML (both) use: 
+#### Requirements
+ - Python 3.6 or above
+ - PyTorch 1.5
+ - Torchvision 0.6
+ - Torchmeta 1.4.6
+
+### Usage
+You can use [`train.py`](train.py) to meta-train your model with MAML. For example, to run MAML on Omniglot 1-shot 5-way with default parameters from the original paper:
 ```bash
-python3 train_both.py /path/to/data --num-shots 1 --num-ways 5 --download --use-cuda
+python train.py /path/to/data --dataset omniglot --num-ways 5 --num-shots 1 --use-cuda --step-size 0.4 --batch-size 32 --num-workers 8 --num-epochs 600 --output-folder /path/to/results
 ```
-Note: In the train_both.py file, set the argument 'SAM_lower' as 'True' to use Sharp-MAML (both)
-
-### Save Model
-After training, the trained model file is saved in the '/save_results' folder in '.th' file format using the model’s state_dict with the torch.save() function. The saved model can be loaded and used to test the model on the held-out testing dataset using model.load_state_dict(torch.load(PATH)).
-
-# Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning
-
-> Momin Abbas, Quan Xiao, Lisha Chen, Pin-Yu Chen, Tianyi Chen. Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning. [[ArXiv](https://)]
-
-### Citation
-If you use this code, please cite the following reference:
+The meta-training script creates a configuration file you can use to meta-test your model. You can use [`test.py`](test.py) to meta-test your model:
+```bash
+python test.py /path/to/results/config.json
 ```
-@inproceedings{abbas2022,
- author    = {Momin Abbas and Quan Xiao and Lisha Chen and Pin-Yu Chen and Tianyi Chen},
- title     = {Sharp-MAML: Sharpness-Aware Model-Agnostic Meta Learning},
- year      = {2022},
- booktitle = {Proceedings of International Conference on Machine Learning},
- address   = {Maryland, MD},
- }
+
+### References
+The code available in this repository is mainly based on the paper
+> Chelsea Finn, Pieter Abbeel, and Sergey Levine. Model-agnostic meta-learning for fast adaptation of deep
+networks. _International Conference on Machine Learning (ICML)_, 2017 [[ArXiv](https://arxiv.org/abs/1703.03400)]
+
+If you want to cite this paper
+```
+@article{finn17maml,
+  author    = {Chelsea Finn and Pieter Abbeel and Sergey Levine},
+  title     = {Model-{A}gnostic {M}eta-{L}earning for {F}ast {A}daptation of {D}eep {N}etworks},
+  journal   = {International Conference on Machine Learning (ICML)},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1703.03400}
+}
 ```

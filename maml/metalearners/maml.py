@@ -65,10 +65,11 @@ class ModelAgnosticMetaLearning(object):
            International Conference on Learning Representations (ICLR).
            (https://arxiv.org/abs/1810.09502)
     """
-    def __init__(self, model, optimizer=None, step_size=0.1, first_order=False,
+    def __init__(self, model, optimizer=None, step_size=0.1, m=1, first_order=False,
                  learn_step_size=False, per_param_step_size=False,
                  num_adaptation_steps=1, scheduler=None,
                  loss_function=F.cross_entropy, device=None):
+
         self.model = model.to(device=device)
         self.optimizer = optimizer
         self.step_size = step_size
@@ -77,6 +78,8 @@ class ModelAgnosticMetaLearning(object):
         self.scheduler = scheduler
         self.loss_function = loss_function
         self.device = device
+        self.m = m
+
 
         if per_param_step_size:
             self.step_size = OrderedDict((name, torch.tensor(step_size,
@@ -119,6 +122,63 @@ class ModelAgnosticMetaLearning(object):
         mean_outer_loss = torch.tensor(0., device=self.device)
         for task_id, (train_inputs, train_targets, test_inputs, test_targets) \
                 in enumerate(zip(*batch['train'], *batch['test'])):
+            params, adaptation_results = self.adapt(train_inputs, train_targets,
+                is_classification_task=is_classification_task,
+                num_adaptation_steps=self.num_adaptation_steps,
+                step_size=self.step_size, first_order=self.first_order)
+
+            results['inner_losses'][:, task_id] = adaptation_results['inner_losses']
+            if is_classification_task:
+                results['accuracies_before'][task_id] = adaptation_results['accuracy_before']
+
+            with torch.set_grad_enabled(self.model.training):
+                test_logits = self.model(test_inputs, params=params)
+                outer_loss = self.loss_function(test_logits, test_targets)
+                results['outer_losses'][task_id] = outer_loss.item()
+                mean_outer_loss += outer_loss
+
+            if is_classification_task:
+                results['accuracies_after'][task_id] = compute_accuracy(
+                    test_logits, test_targets)
+
+        mean_outer_loss.div_(num_tasks)
+        results['mean_outer_loss'] = mean_outer_loss.item()
+
+        return mean_outer_loss, results
+
+
+    def get_outer_loss_first(self, batch):
+        if 'test' not in batch:
+            raise RuntimeError('The batch does not contain any test dataset.')
+
+        _, test_targets = batch['test']
+        num_tasks = test_targets.size(0)
+        is_classification_task = (not test_targets.dtype.is_floating_point)
+        results = {
+            'num_tasks': num_tasks,
+            'inner_losses': np.zeros((self.num_adaptation_steps,
+                num_tasks), dtype=np.float32),
+            'outer_losses': np.zeros((num_tasks,), dtype=np.float32),
+            'mean_outer_loss': 0.
+        }
+        if is_classification_task:
+            results.update({
+                'accuracies_before': np.zeros((num_tasks,), dtype=np.float32),
+                'accuracies_after': np.zeros((num_tasks,), dtype=np.float32)
+            })
+
+        mean_outer_loss = torch.tensor(0., device=self.device)
+        for task_id, (train_inputs, train_targets, test_inputs, test_targets) \
+                in enumerate(zip(*batch['train'], *batch['test'])):
+
+            # test_inputs = test_inputs[0:self.m]
+            # test_targets = test_targets[0:self.m]
+            # print("\n\naa: ", self.m)
+            # # print("\n\nbb: ", train_inputs.size())
+            # # print("\n\ncc: ", train_targets.size())
+            # print("\n\ndd: ", test_inputs.size())
+            # print("\n\nee: ", test_targets.size())
+
             params, adaptation_results = self.adapt(train_inputs, train_targets,
                 is_classification_task=is_classification_task,
                 num_adaptation_steps=self.num_adaptation_steps,
@@ -198,10 +258,14 @@ class ModelAgnosticMetaLearning(object):
 
                 batch = tensors_to_device(batch, device=self.device)
                 outer_loss, results = self.get_outer_loss(batch)
-                yield results
 
                 outer_loss.backward()
-                self.optimizer.step()
+                self.optimizer.first_step(zero_grad=True)
+
+                outer_loss2, results2 = self.get_outer_loss(batch)
+                outer_loss2.backward()
+                self.optimizer.second_step(zero_grad=True)
+                yield results2
 
                 num_batches += 1
 
