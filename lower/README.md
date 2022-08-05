@@ -7,7 +7,7 @@ An implementation of Sharp-MAML in [PyTorch](https://pytorch.org/) with [Torchme
 * Pytorch: 1.11.0
 
 ### Preparation
-Download the data from [this link](https://drive.google.com/drive/folders/1OT8mNSKoTvhgT3dE1g545LrPuUjLVcfJ?usp=sharing). Unzip the datasets and place them into any folder.
+Download the data from [this link](https://drive.google.com/drive/folders/1OT8mNSKoTvhgT3dE1g545LrPuUjLVcfJ?usp=sharing). Unzip the datasets and place them into a folder.
 
 ### Usage
 You can use [`train_mini-sharplower.py`](train_mini-sharplower.py) to meta-train your model with Sharp-MAML_low. For example, to run Miniimagenet 5-way 1-shot, run:
