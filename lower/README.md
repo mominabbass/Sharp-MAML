@@ -6,7 +6,7 @@ An implementation of Sharp-MAML in [PyTorch](https://pytorch.org/) with [Torchme
 * Python: 3.9.7
 * Pytorch: 1.11.0
 
-###Preparation
+### Preparation
 Download the data from [this link](https://drive.google.com/drive/folders/1OT8mNSKoTvhgT3dE1g545LrPuUjLVcfJ?usp=sharing). Unzip the datasets and place them into any folder.
 
 ### Usage
