@@ -1,4 +1,4 @@
-# Model-Agnostic Meta-Learning
+# Sharp-MAML$_low$
 [![Documentation](https://img.shields.io/badge/1.5-PyTorch-EE4C2C)](https://pytorch.org/)
 
 An implementation of Model-Agnostic Meta-Learning (MAML) in [PyTorch](https://pytorch.org/) with [Torchmeta](https://github.com/tristandeleu/pytorch-meta).
